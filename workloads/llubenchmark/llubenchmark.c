@@ -1,12 +1,12 @@
 /*
- * LLUBENCHMARK 
+ * LLUBENCHMARK
  * Craig Zilles (zilles@cs.wisc.edu)
  * http://www.cs.wisc.edu/~zilles/llubenchmark.html
  *
  * This program is a linked list traversal micro-benchmark, which can
  * be used (among other things) to approximate the non-benchmark
  * Health.
- * 
+ *
  * The benchmark executes for a proscribed number of iterations (-i),
  * and on every iteration the lists are traversed and potentially
  * extended.  The number of lists can be specified (-n) as well as the
@@ -23,11 +23,11 @@
  *
  * To approximate the non-benchmark Health, use the options:
  *     -i <num iterations> -g .333 -d -t -n 341
- * 
+ *
  * (the growth rate of the lists in health is different for different
  * levels of the hierarchy and the constant .333 is just my
  * approximation of the growth rate).
- *  
+ *
  */
 
 #include <stdio.h>
@@ -124,14 +124,14 @@ allocate() {
 	 assert(free_list != 0);
   }
   num_allocated ++;
-  return (struct element *) 
+  return (struct element *)
 	 (((char *)free_list) + ((next_free ++) * element_size));
 }
 
 void grab_pim_table()
 {
 	unsigned long baseaddr = (unsigned long)g_pim_register;
-	
+
 	iowrite32(1, baseaddr + GrabPageTable);
 
 	// Polling for done
@@ -146,7 +146,7 @@ main(int argc, char *argv[]) {
 	 num_lists = 1,
 	 tail = 0,
 	 initial_length = 1;
-  float growth_rate = 0.0;  
+  float growth_rate = 0.0;
   char c = 0;
   int i = 0, j = 0, k = 0;
   int accumulate = 0;
@@ -177,11 +177,11 @@ main(int argc, char *argv[]) {
 		return(-1);
 	 }
   }
-		
+
   assert (element_size > sizeof(struct element));
   assert (initial_length > 0);
 
-#if defined(GEM5)	
+#if defined(GEM5)
 	// open PIMBT device
 	g_pimbt_dev = open("/dev/pimbt", O_RDWR);
 
@@ -198,14 +198,14 @@ main(int argc, char *argv[]) {
   /* build lists */
   lists = (struct element **) malloc (num_lists * sizeof(struct element *));
   assert(lists != 0);
-  
-  for (i = 0 ; i < num_lists ; i ++) { 
+
+  for (i = 0 ; i < num_lists ; i ++) {
 	 lists[i] = NULL;
   }
 
 
-  for (i = 0 ; i < initial_length ; i ++) { 
-	 for (j = 0 ; j < num_lists ; j ++) { 
+  for (i = 0 ; i < initial_length ; i ++) {
+	 for (j = 0 ; j < num_lists ; j ++) {
 		struct element *e = allocate();
 		e->next = lists[j];
 		lists[j] = e;
@@ -213,7 +213,7 @@ main(int argc, char *argv[]) {
   }
 
 #if defined(GEM5)
-	m5_checkpoint(0, 0);
+	//m5_checkpoint(0, 0);
 
 #if defined(PIM)
     grab_pim_table();
@@ -224,12 +224,12 @@ main(int argc, char *argv[]) {
 
 
   /* iterate */
-  for (i = 0 ; i < max_iterations ; i ++) { 
+  for (i = 0 ; i < max_iterations ; i ++) {
 	 if ((i % 10) == 0) {
 		printf("%d\n", i);
 	 }
 	 /* traverse lists */
-	 for (j = 0 ; j < num_lists ; j ++) { 
+	 for (j = 0 ; j < num_lists ; j ++) {
 		struct element *trav = lists[j];
 
 #if defined(PIM)
@@ -244,7 +244,7 @@ main(int argc, char *argv[]) {
 			done = ioread32(baseaddr + Done);
 		} while (done != 1);
 
-#else		
+#else
 
 		while (trav != NULL) {
 		  accumulate += trav->count;
@@ -256,13 +256,13 @@ main(int argc, char *argv[]) {
 
 #endif
 	 }
-	 
+
 	 /* grow lists */
 	 growth += growth_rate;
 	 j = growth;
 	 growth -= j;
 	 for ( ; j > 0 ; j --) {
-		for (k = 0 ; k < num_lists ; k ++) { 
+		for (k = 0 ; k < num_lists ; k ++) {
 		  struct element *e = allocate();
 		  if (tail) {
 
@@ -286,7 +286,7 @@ main(int argc, char *argv[]) {
 			  e->next = NULL;
 
 
-#else		
+#else
 
 			 struct element *trav = lists[k];
 			 while (trav->next != NULL) {
@@ -308,9 +308,9 @@ main(int argc, char *argv[]) {
 #if defined(GEM5)
 	m5_dump_stats(0, 0);
 	m5_exit(0);
-#endif	
+#endif
 
 	//printf ("num allocated %d\n", num_allocated);
   return 0;
 }
-	 
+

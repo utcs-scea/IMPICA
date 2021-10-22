@@ -46,7 +46,7 @@ static const int ChannelShft       = 8;
     we need to read it from files and that's slow **/
 extern unsigned long input_table[];
 
-bt_node * 	tree_root; 
+bt_node * 	tree_root;
 
 SInt32	 	order = BTREE_ORDER; // # of keys in a node(for both leaf and non-leaf)
 
@@ -87,7 +87,7 @@ static inline unsigned long ioread64(const unsigned long addr)
 void grab_pim_table()
 {
 	unsigned long baseaddr = (unsigned long)g_pim_register;
-	
+
 	iowrite32(1, baseaddr + GrabPageTable);
 
 	// Polling for done
@@ -106,7 +106,7 @@ int leaf_has_key(bt_node * leaf, idx_key_t key);
 RC insert_into_leaf(bt_node * leaf, idx_key_t key, item_t * item);
 RC split_lf_insert(bt_node * leaf, idx_key_t key, item_t * item);
 
-RC make_node(bt_node *& node) {	
+RC make_node(bt_node *& node) {
 
 	bt_node * new_node = node_memory_pool++;
 	btree_node++;
@@ -152,17 +152,17 @@ RC btree_init() {
 
 
 bool latch_node(bt_node * node, latch_t latch_type) {
-	// TODO latch is disabled 
+	// TODO latch is disabled
 	return true;
 }
 
 latch_t release_latch(bt_node * node) {
-	// TODO latch is disabled 
+	// TODO latch is disabled
 	return LATCH_SH;
 }
 
 RC upgrade_latch(bt_node * node) {
-	// TODO latch is disabled 
+	// TODO latch is disabled
 	return RCOK;
 }
 
@@ -180,18 +180,18 @@ RC cleanup(bt_node * node, bt_node * last_ex) {
 
 #if (!BTREE_PIM)
 
-RC index_read(idx_key_t key, item_t *& item) 
+RC index_read(idx_key_t key, item_t *& item)
 {
 	RC rc = Abort;
 	bt_node * leaf;
-	
+
 	//if (!latch_tree(LATCH_SH))
 	//	return Abort;
 
 	find_leaf(key, INDEX_READ, leaf);
 	if (leaf == NULL)
 		M_ASSERT(false, "the leaf does not exist!");
-	for (SInt32 i = 0; i < leaf->num_keys; i++) 
+	for (SInt32 i = 0; i < leaf->num_keys; i++)
 		if (leaf->keys[i] == key) {
 			item = (item_t *)leaf->pointers[i];
 			release_latch(leaf);
@@ -206,7 +206,7 @@ RC index_read(idx_key_t key, item_t *& item)
 	   	//return rc;
 		//itemid_t *pim_item;
 		//index_read_pim(key, pim_item, part_id, thd_id);
-		//M_ASSERT(pim_item == item, "SW and HW traverse into different item");		
+		//M_ASSERT(pim_item == item, "SW and HW traverse into different item");
 	} else {
 		M_ASSERT(false, "the key does not exist!");
 	}
@@ -218,10 +218,10 @@ RC index_read(idx_key_t key, item_t *& item)
 
 #else    //BTREE_PIM
 
-RC index_read(idx_key_t key, itemid_t *& item, 
-	int part_id, int thd_id) 
+RC index_read(idx_key_t key, itemid_t *& item,
+	int part_id, int thd_id)
 {
-	unsigned long baseaddr = (unsigned long)g_pim_register + (thd_id << 8); 
+	unsigned long baseaddr = (unsigned long)g_pim_register + (thd_id << 8);
 	unsigned int done;
 
 	unsigned long c = tree_root;
@@ -264,7 +264,7 @@ RC index_read(idx_key_t key, itemid_t *& item,
 		if (retval != 1) {
 			printf("DEBUG: the return value of DEVICE IOCTL is wrong!!\n");
 		}
-		
+
 		assert(0);
 	}
 
@@ -309,7 +309,7 @@ RC index_insert(idx_key_t key, item_t * item) {
 
 	rc = find_leaf_ex(key, INDEX_INSERT, leaf, last_ex);
 	assert(rc == RCOK);
-	
+
 	bt_node * tmp_node = leaf;
 	if (last_ex != NULL) {
 		while (tmp_node != last_ex) {
@@ -352,7 +352,7 @@ RC index_insert(idx_key_t key, item_t * item) {
 
 
 
-RC find_leaf_ex(idx_key_t key, idx_acc_t access_type, bt_node *& leaf, bt_node *& last_ex) 
+RC find_leaf_ex(idx_key_t key, idx_acc_t access_type, bt_node *& leaf, bt_node *& last_ex)
 {
 //	RC rc;
 	SInt32 i;
@@ -383,7 +383,7 @@ RC find_leaf_ex(idx_key_t key, idx_acc_t access_type, bt_node *& leaf, bt_node *
 			cleanup(c, last_ex);
 			last_ex = NULL;
 			return Abort;
-		}	
+		}
 		if (access_type == INDEX_INSERT) {
 			if (child->num_keys == order - 1) {
 				if (upgrade_latch(c) != RCOK) {
@@ -396,7 +396,7 @@ RC find_leaf_ex(idx_key_t key, idx_acc_t access_type, bt_node *& leaf, bt_node *
 				if (last_ex == NULL)
 					last_ex = c;
 			}
-			else { 
+			else {
 				cleanup(c, last_ex);
 				last_ex = NULL;
 				release_latch(c);
@@ -405,7 +405,7 @@ RC find_leaf_ex(idx_key_t key, idx_acc_t access_type, bt_node *& leaf, bt_node *
 			release_latch(c); // release the LATCH_SH on c
 		c = child;
 	}
-	// c is leaf		
+	// c is leaf
 	// at this point, if the access is a read, then only the leaf is latched by LATCH_SH
 	// if the access is an insertion, then the leaf is sh latched and related nodes in the tree
 	// are ex latched.
@@ -424,7 +424,7 @@ RC find_leaf_ex(idx_key_t key, idx_acc_t access_type, bt_node *& leaf, bt_node *
 RC insert_into_leaf(bt_node * leaf, idx_key_t key, item_t * item) {
 	SInt32 i, insertion_point;
     insertion_point = 0;
-	int idx = leaf_has_key(leaf, key);	
+	int idx = leaf_has_key(leaf, key);
 	if (idx >= 0) {
 		item->next = (item_t *)leaf->pointers[idx];
 		leaf->pointers[idx] =  item;
@@ -474,7 +474,7 @@ RC split_lf_insert(bt_node * leaf, idx_key_t key, item_t * item) {
 //	new_leaf->pointers[insertion_index] = item;
     temp_keys[insertion_index] = key;
     temp_pointers[insertion_index] = item;
-	
+
    	// leaf is on the left of new_leaf
     split = cut(order - 1);
     leaf->num_keys = 0;
@@ -494,13 +494,13 @@ RC split_lf_insert(bt_node * leaf, idx_key_t key, item_t * item) {
         new_leaf->num_keys++;
 		M_ASSERT( (leaf->num_keys < order), "too many keys in leaf" );
     }
-	
+
 //    delete temp_pointers;
 //    delete temp_keys;
 
 	new_leaf->next = leaf->next;
 	leaf->next = new_leaf;
-	
+
 //    new_leaf->pointers[order - 1] = leaf->pointers[order - 1];
 //    leaf->pointers[order - 1] = new_leaf;
 
@@ -511,22 +511,22 @@ RC split_lf_insert(bt_node * leaf, idx_key_t key, item_t * item) {
 
     new_leaf->parent = leaf->parent;
     new_key = new_leaf->keys[0];
-	
+
     rc = insert_into_parent(leaf, new_key, new_leaf);
 	return rc;
 }
 
 RC insert_into_parent(
-	bt_node * left, 
-	idx_key_t key, 
+	bt_node * left,
+	idx_key_t key,
 	bt_node * right) {
-	
+
     bt_node * parent = left->parent;
 
     /* Case: new root. */
     if (parent == NULL)
         return insert_into_new_root(left, key, right);
-    
+
 	SInt32 insert_idx = 0;
 	while (parent->keys[insert_idx] < key && insert_idx < parent->num_keys)
 		insert_idx ++;
@@ -542,16 +542,16 @@ RC insert_into_parent(
 		return RCOK;
 	}
 
-    /* Harder case:  split a node in order 
+    /* Harder case:  split a node in order
      * to preserve the B+ tree properties.
      */
-	
+
 	return split_nl_insert(parent, insert_idx, key, right);
 //	return RCOK;
 }
 
 RC insert_into_new_root(
-	bt_node * left, idx_key_t key, bt_node * right) 
+	bt_node * left, idx_key_t key, bt_node * right)
 {
 	RC rc;
 	bt_node * new_root;
@@ -568,17 +568,17 @@ RC insert_into_new_root(
     right->parent = new_root;
 	left->next = right;
 
-	tree_root = new_root;	
+	tree_root = new_root;
 	// TODO this new root is not latched, at this point, other threads
 	// may start to access this new root. Is this ok?
     return RCOK;
 }
 
 RC split_nl_insert(
-	bt_node * old_node, 
-	SInt32 left_index, 
-	idx_key_t key, 
-	bt_node * right) 
+	bt_node * old_node,
+	SInt32 left_index,
+	idx_key_t key,
+	bt_node * right)
 {
 	RC rc;
 	int64_t i, j, split, k_prime;
@@ -590,8 +590,8 @@ RC split_nl_insert(
     /* First create a temporary set of keys and pointers
      * to hold everything in order, including
      * the new key and pointer, inserted in their
-     * correct places. 
-     * Then create a new node and copy half of the 
+     * correct places.
+     * Then create a new node and copy half of the
      * keys and pointers to the old node and
      * the other half to the new.
      */
@@ -663,11 +663,11 @@ RC split_nl_insert(
      * the old node to the left and the new to the right.
      */
 
-    return insert_into_parent(old_node, k_prime, new_node);	
+    return insert_into_parent(old_node, k_prime, new_node);
 }
 
 int leaf_has_key(bt_node * leaf, idx_key_t key) {
-	for (SInt32 i = 0; i < leaf->num_keys; i++) 
+	for (SInt32 i = 0; i < leaf->num_keys; i++)
 		if (leaf->keys[i] == key)
 			return i;
 	return -1;
@@ -687,13 +687,13 @@ int main(int argc, char *argv[])
 	item_memory_pool = (item_t *)calloc(sizeof(item_t), INPUT_SIZE);
 
 	/* Allocate the memory for all nodes, including root node */
-	node_memory_pool = (bt_node *)calloc(sizeof(bt_node), (INPUT_SIZE + 1));	
+	node_memory_pool = (bt_node *)calloc(sizeof(bt_node), (INPUT_SIZE + 1));
 
 	/* initialize the B-tree */
 	btree_init();
 
 
-#if defined(PIM)	
+#if defined(PIM)
 	// open PIMBT device
 	g_pimbt_dev = open("/dev/pimbt", O_RDWR);
 
@@ -716,7 +716,7 @@ int main(int argc, char *argv[])
 	}
 
 #if defined(GEM5)
-	m5_checkpoint(0, 0);
+	//m5_checkpoint(0, 0);
 
 #if defined(PIM)
     grab_pim_table();
@@ -735,10 +735,10 @@ int main(int argc, char *argv[])
 #if defined(GEM5)
 	m5_dump_stats(0, 0);
 	m5_exit(0);
-#endif	
+#endif
 
 	printf("Total B-tree nodes: %d\n", btree_node);
-	
+
 	return 0;
 }
 

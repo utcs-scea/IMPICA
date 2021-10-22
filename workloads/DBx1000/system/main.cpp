@@ -36,7 +36,7 @@ int main(int argc, char* argv[])
 	// 0. initialize global data structure
 	parser(argc, argv);
 
-#if (BTREE_PIM)	
+#if (BTREE_PIM)
 	// open PIMBT device
 	g_pimbt_dev = open("/dev/pimbt", O_RDWR);
 
@@ -50,10 +50,10 @@ int main(int argc, char* argv[])
 #endif
 
 	// per-partition malloc
-	mem_allocator.init(g_part_cnt, MEM_SIZE / g_part_cnt); 
+	mem_allocator.init(g_part_cnt, MEM_SIZE / g_part_cnt);
 	stats.init();
 	glob_manager.init();
-	if (g_cc_alg == DL_DETECT) 
+	if (g_cc_alg == DL_DETECT)
 		dl_detector.init();
 	printf("mem_allocator initialized!\n");
 	workload * m_wl;
@@ -63,7 +63,7 @@ int main(int argc, char* argv[])
 		case TPCC :
 			m_wl = new tpcc_wl; break;
 		case TEST :
-			m_wl = new TestWorkload; 
+			m_wl = new TestWorkload;
 			((TestWorkload *)m_wl)->tick();
 			break;
 		default:
@@ -75,8 +75,8 @@ int main(int argc, char* argv[])
 	printf("workload initialized!\n");
 	// 2. spawn multiple threads
 	uint64_t thd_cnt = g_thread_cnt;
-	
-	pthread_t * p_thds = 
+
+	pthread_t * p_thds =
 		(pthread_t *) malloc(sizeof(pthread_t) * (thd_cnt - 1));
 	m_thds = new thread_t[thd_cnt];
 	// query_queue should be the last one to be initialized!!!
@@ -93,11 +93,11 @@ int main(int argc, char* argv[])
 	vll_man.init();
 #endif
 
-	for (uint32_t i = 0; i < thd_cnt; i++) 
+	for (uint32_t i = 0; i < thd_cnt; i++)
 		m_thds[i].init(i, m_wl);
 
 #if defined(GEM5)
-	m5_checkpoint(0, 0);
+	//m5_checkpoint(0, 0);
 #endif
 
 #if (MODEL_PIM_PTABLE)
@@ -126,8 +126,8 @@ int main(int argc, char* argv[])
 
 #if defined(GEM5)
 	m5_reset_stats(0, 0);
-#endif	
-	
+#endif
+
 	// spawn and run txns again.
 	int64_t starttime = get_server_clock();
 	cpu_set_t cpuset;
@@ -146,14 +146,14 @@ int main(int argc, char* argv[])
 	CPU_SET(0, &cpuset);
 	int s = pthread_setaffinity_np(pthread_self(), sizeof(cpu_set_t), &cpuset);
 	f((void *)(thd_cnt - 1));
-	for (uint32_t i = 0; i < thd_cnt - 1; i++) 
+	for (uint32_t i = 0; i < thd_cnt - 1; i++)
 		pthread_join(p_thds[i], NULL);
 	int64_t endtime = get_server_clock();
 
 #if defined(GEM5)
 	m5_dump_stats(0, 0);
-#endif	
-	
+#endif
+
 	if (WORKLOAD != TEST) {
 		printf("PASS! SimTime = %ld, s = %d\n", endtime - starttime, s);
 		if (STATS_ENABLE)
@@ -161,14 +161,14 @@ int main(int argc, char* argv[])
 	} else {
 		((TestWorkload *)m_wl)->summarize();
 	}
-	
+
 	fflush(stdout);
-	
+
 	for (uint32_t i = 0; i < 100000; i++);
 
 #if defined(GEM5)
 	m5_exit(0);
-#endif	
+#endif
 
 	return 0;
 }

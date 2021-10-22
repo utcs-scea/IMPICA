@@ -72,7 +72,7 @@ static inline unsigned long ioread64(const unsigned long addr)
 void grab_pim_table()
 {
 	unsigned long baseaddr = (unsigned long)g_pim_register;
-	
+
 	iowrite32(1, baseaddr + GrabPageTable);
 
 	// Polling for done
@@ -88,12 +88,12 @@ static item* item_memory_pool = 0;
 
 
 void assoc_init() {
-	primary_hashtable = (item**) calloc(hashsize(hashpower), sizeof(void *));	
+	primary_hashtable = (item**) calloc(hashsize(hashpower), sizeof(void *));
 }
 
 item *assoc_find(const char *key, const int nkey, const int hv) {
     item *it;
-    
+
     item *ret = NULL;
 
 	it = primary_hashtable[hv & hashmask(hashpower)];
@@ -102,7 +102,7 @@ item *assoc_find(const char *key, const int nkey, const int hv) {
 
 	unsigned long baseaddr = (unsigned long)g_pim_register;
 	unsigned int done;
-	
+
 	iowrite64((unsigned long)it, baseaddr + RootAddrLo);
 	iowrite32((unsigned int)nkey, baseaddr + KeySize);
 	iowrite64((unsigned long)key, baseaddr + KeyLo);
@@ -115,7 +115,7 @@ item *assoc_find(const char *key, const int nkey, const int hv) {
 	// Read the pointer to the node
 	ret = (item *)ioread64(baseaddr + LeafLo);
 
-#else		
+#else
 
 	int depth = 0;
 
@@ -151,7 +151,7 @@ int main(int argc, char *argv[]) {
 	/* Allocate the memory for all items */
 	item_memory_pool = (item *)malloc(sizeof(item) * INPUT_SIZE);
 
-#if defined(PIM)	
+#if defined(PIM)
 	// open PIMBT device
 	g_pimbt_dev = open("/dev/pimbt", O_RDWR);
 
@@ -176,7 +176,7 @@ int main(int argc, char *argv[]) {
 	}
 
 #if defined(GEM5)
-	m5_checkpoint(0, 0);
+	//m5_checkpoint(0, 0);
 
 #if defined(PIM)
     grab_pim_table();
@@ -189,7 +189,7 @@ int main(int argc, char *argv[]) {
 	/* Do the test randomly */
 	for (i = 0; i < TEST_ITERATION; i++) {
 		test_idx = rand() % INPUT_SIZE;
-		it = assoc_find(input_table[test_idx].key, 
+		it = assoc_find(input_table[test_idx].key,
 						input_table[test_idx].nkey,
 						input_table[test_idx].nv);
 	}
@@ -197,8 +197,8 @@ int main(int argc, char *argv[]) {
 #if defined(GEM5)
 	m5_dump_stats(0, 0);
 	m5_exit(0);
-#endif	
-	
+#endif
+
 	return 0;
 }
 
