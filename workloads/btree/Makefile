@@ -24,7 +24,7 @@ all:btree_gem5 btree_pim5
 
 
 btree_gem5 : $(OGEM)
-	$(CC) -o $@ $^ $(LDFLAGS)
+	$(CC) -o $@ $^ $(LDFLAGS_GEM5)
 ./gem5/%.o: %.c | gem5
 	$(CC) -c $(CFLAGS_GEM5) $(INCLUDE) -o $@ $<
 ./gem5/%.o: %.S | gem5
@@ -32,16 +32,14 @@ btree_gem5 : $(OGEM)
 gem5:
 	mkdir -p gem5
 
-btree_pim5 : $(OGEM)
-	$(CC) -o $@ $^ $(LDFLAGS)
+btree_pim5 : $(OPIM)
+	$(CC) -o $@ $^ $(LDFLAGS_PIM5)
 ./pim5/%.o: %.c | pim5
 	$(CC) -c $(CFLAGS_PIM5) $(INCLUDE) -o $@ $<
 ./pim5/%.o: %.S | pim5
 	$(CC) -c $(CFLAGS_PIM5) $(INCLUDE) -o $@ $<
 pim5:
 	mkdir -p pim5
-
-
 
 .PHONY: clean
 clean:
