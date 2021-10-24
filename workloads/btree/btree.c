@@ -218,7 +218,7 @@ RC index_read(idx_key_t key, item_t *& item)
 
 #else    //BTREE_PIM
 
-RC index_read(idx_key_t key, itemid_t *& item,
+RC index_read(idx_key_t key, item_t *& item,
 	int part_id, int thd_id)
 {
 	unsigned long baseaddr = (unsigned long)g_pim_register + (thd_id << 8);
