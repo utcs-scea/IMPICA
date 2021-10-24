@@ -7,12 +7,12 @@ SRC_DIRS = ./
 DEPS = -I.
 
 CFLAGS += $(DEPS) #-D  -Werror
-CFLAGS_GEM5 = $(CFLAGS) -DGEM5
-CFLAGS_PIM5 = $(CFLAGS_GEM5) -DPIM
+CFLAGS_GEM5 = $(CFLAGS) -DGEM5 -DPIM
+CFLAGS_PIM5 = $(CFLAGS_GEM5) -DBTREE_PIM
 LDFLAGS = -Wall -L. -pthread -g -lrt -std=c++0x
 LDFLAGS += $(CFLAGS)
-LDFLAGS_GEM5 = $(LDFLAGS) -DGEM5
-LDFLAGS_PIM5 = $(LDFLAGS_GEM5) -DPIM
+LDFLAGS_GEM5 = $(CFLAGS_GEM5)
+LDFLAGS_PIM5 = $(CFLAGS_PIM5)
 
 CPPS = $(foreach dir,$(SRC_DIRS),$(wildcard $(dir)*.c))
 ASMS = $(foreach dir,$(SRC_DIRS),$(wildcard $(dir)*.S))
