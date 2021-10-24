@@ -180,7 +180,7 @@ RC cleanup(bt_node * node, bt_node * last_ex) {
 
 #if (!BTREE_PIM)
 
-RC index_read(idx_key_t key, item_t *& item)
+RC index_read(idx_key_t key, item_t *& item, int thd_id)
 {
 	RC rc = Abort;
 	bt_node * leaf;
