@@ -10,6 +10,7 @@
 #include "btree.h"
 
 #define TEST_ITERATION 1000000
+#define MAX_THREADS 4
 
 //#define GEM5
 //#define PIM
@@ -51,8 +52,8 @@ bt_node * 	tree_root;
 SInt32	 	order = BTREE_ORDER; // # of keys in a node(for both leaf and non-leaf)
 
 // the leaf and the idx within the leaf that the thread last accessed.
-bt_node * cur_leaf_per_thd;
-SInt32    cur_idx_per_thd;
+bt_node** cur_leaf_per_thd;
+SInt32  * cur_idx_per_thd;
 
 
 /* The memory pool for the items in the hash table */
@@ -195,8 +196,8 @@ RC index_read(idx_key_t key, item_t *& item, int thd_id)
 		if (leaf->keys[i] == key) {
 			item = (item_t *)leaf->pointers[i];
 			release_latch(leaf);
-			cur_leaf_per_thd = leaf;
-			cur_idx_per_thd = i;
+			cur_leaf_per_thd[thd_id] = leaf;
+			cur_idx_per_thd[thd_id] = i;
 			rc = RCOK;
 		}
 	// release the latch after reading the node
@@ -218,13 +219,12 @@ RC index_read(idx_key_t key, item_t *& item, int thd_id)
 
 #else    //BTREE_PIM
 
-RC index_read(idx_key_t key, item_t *& item,
-	, int thd_id)
+RC index_read(idx_key_t key, item_t *& item, int thd_id)
 {
 	unsigned long baseaddr = (unsigned long)g_pim_register + (thd_id << 8);
 	unsigned int done;
 
-	unsigned long c = tree_root;
+	unsigned long c = (unsigned long) tree_root;
 
 	assert(c != 0);
 
@@ -241,7 +241,7 @@ RC index_read(idx_key_t key, item_t *& item,
 
 	item = (item_t *)ioread64(baseaddr + ItemLo);
 
-	cur_idx_per_thd = (int)ioread32(baseaddr + ItemIndex);
+	cur_idx_per_thd[thd_id] = (int)ioread32(baseaddr + ItemIndex);
 
 
 #if 0
@@ -275,7 +275,7 @@ RC index_read(idx_key_t key, item_t *& item,
 
 #else
 
-	(*cur_leaf_per_thd[thd_id]) = (bt_node*) ioread64(baseaddr + LeafLo);
+	cur_leaf_per_thd[thd_id] = (bt_node*) ioread64(baseaddr + LeafLo);
 
 #endif
 
@@ -689,6 +689,10 @@ int main(int argc, char *argv[])
 	/* Allocate the memory for all nodes, including root node */
 	node_memory_pool = (bt_node *)calloc(sizeof(bt_node), (INPUT_SIZE + 1));
 
+  /* ALLOCATE MEMORY FOR THREADS */
+  cur_leaf_per_thd = (bt_node**) malloc(sizeof(bt_node*) * MAX_THREADS);
+  cur_idx_per_thd  = (SInt32  *) malloc(sizeof(SInt32) * MAX_THREADS);
+
 	/* initialize the B-tree */
 	btree_init();
 
@@ -712,7 +716,7 @@ int main(int argc, char *argv[])
 	item_t *it;
 	for (i = 0; i < INPUT_SIZE; i++) {
 		it = item_memory_pool++;
-		index_insert(input_table[i], it, 0);
+		index_insert(input_table[i], it);
 	}
 
 #if defined(GEM5)
@@ -729,7 +733,7 @@ int main(int argc, char *argv[])
 	/* Do the test randomly */
 	for (i = 0; i < TEST_ITERATION; i++) {
 		test_idx = rand() % INPUT_SIZE;
-		index_read(input_table[test_idx], it);
+		index_read(input_table[test_idx], it, 0);
 	}
 
 #if defined(GEM5)
