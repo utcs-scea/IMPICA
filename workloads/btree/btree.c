@@ -219,7 +219,7 @@ RC index_read(idx_key_t key, item_t *& item)
 #else    //BTREE_PIM
 
 RC index_read(idx_key_t key, item_t *& item,
-	int part_id, int thd_id)
+	, int thd_id)
 {
 	unsigned long baseaddr = (unsigned long)g_pim_register + (thd_id << 8);
 	unsigned int done;
@@ -712,7 +712,7 @@ int main(int argc, char *argv[])
 	item_t *it;
 	for (i = 0; i < INPUT_SIZE; i++) {
 		it = item_memory_pool++;
-		index_insert(input_table[i], it);
+		index_insert(input_table[i], it, 0);
 	}
 
 #if defined(GEM5)
