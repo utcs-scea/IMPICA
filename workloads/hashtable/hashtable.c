@@ -11,9 +11,6 @@
 
 #define TEST_ITERATION 100000
 
-#define GEM5
-#define PIM
-
 #ifdef GEM5
 #include "m5op.h"
 #endif
