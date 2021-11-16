@@ -173,7 +173,7 @@ int main(int argc, char *argv[]) {
 	}
 
 #if defined(GEM5)
-	//m5_checkpoint(0, 0);
+	m5_checkpoint(0, 0);
 
 #if defined(PIM)
     grab_pim_table();
@@ -192,7 +192,6 @@ int main(int argc, char *argv[]) {
 	}
 
 #if defined(GEM5)
-	m5_dump_stats(0, 0);
 	m5_exit(0);
 #endif
 

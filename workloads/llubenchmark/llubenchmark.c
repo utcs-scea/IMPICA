@@ -60,9 +60,6 @@ static inline unsigned long ioread64(const unsigned long addr)
 	return *(const volatile unsigned long *) addr;
 }
 
-#define GEM5
-#define PIM
-
 #ifdef GEM5
 #include "m5op.h"
 #endif
@@ -181,7 +178,7 @@ main(int argc, char *argv[]) {
   assert (element_size > sizeof(struct element));
   assert (initial_length > 0);
 
-#if defined(GEM5)
+#if defined(PIM)
 	// open PIMBT device
 	g_pimbt_dev = open("/dev/pimbt", O_RDWR);
 
@@ -213,7 +210,7 @@ main(int argc, char *argv[]) {
   }
 
 #if defined(GEM5)
-	//m5_checkpoint(0, 0);
+	m5_checkpoint(0, 0);
 
 #if defined(PIM)
     grab_pim_table();
@@ -306,7 +303,6 @@ main(int argc, char *argv[]) {
   }
 
 #if defined(GEM5)
-	m5_dump_stats(0, 0);
 	m5_exit(0);
 #endif
 

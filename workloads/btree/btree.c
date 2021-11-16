@@ -689,8 +689,7 @@ int main(int argc, char *argv[])
 	/* Allocate the memory for all nodes, including root node */
 	node_memory_pool = (bt_node *)calloc(sizeof(bt_node), (INPUT_SIZE + 1));
 
-  /* ALLOCATE MEMORY FOR THREADS */
-  cur_leaf_per_thd = (bt_node**) malloc(sizeof(bt_node*) * MAX_THREADS);
+  /* ALLOCATE MEMORY FOR THREADS */ cur_leaf_per_thd = (bt_node**) malloc(sizeof(bt_node*) * MAX_THREADS);
   cur_idx_per_thd  = (SInt32  *) malloc(sizeof(SInt32) * MAX_THREADS);
 
 	/* initialize the B-tree */
@@ -720,7 +719,7 @@ int main(int argc, char *argv[])
 	}
 
 #if defined(GEM5)
-	//m5_checkpoint(0, 0);
+	m5_checkpoint(0, 0);
 
 #if defined(PIM)
     grab_pim_table();
@@ -737,8 +736,7 @@ int main(int argc, char *argv[])
 	}
 
 #if defined(GEM5)
-	m5_dump_stats(0, 0);
-	m5_exit(0);
+  m5_exit(0);
 #endif
 
 	printf("Total B-tree nodes: %d\n", btree_node);
